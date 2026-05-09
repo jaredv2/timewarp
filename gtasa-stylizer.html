@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TIMEWARP — AI Age Transformation</title>
+    <script type="module">
+      import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+      window.GradioClient = Client;
+    </script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #f5f0e8;
+        --bg2: #ede8de;
+        --ink: #1a1510;
+        --ink2: #5a5040;
+        --ink3: #9a8f7a;
+        --gold: #c8962a;
+        --gold-light: #e8b84a;
+        --cream: #faf7f0;
+        --red: #c0392b;
+        --border: rgba(26, 21, 16, 0.12);
+        --border2: rgba(26, 21, 16, 0.22);
+        --r: 4px;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "DM Sans", sans-serif;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Grain texture overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 1000;
+        opacity: 0.5;
+      }
+
+      /* Decorative lines */
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--gold) 0%,
+          var(--gold-light) 50%,
+          var(--gold) 100%
+        );
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 28px;
+        border-bottom: 1px solid var(--border);
+        background: var(--cream);
+      }
+
+      .logo {
+        font-family: "Playfair Display", serif;
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--ink);
+      }
+      .logo span {
+        color: var(--gold);
+      }
+
+      .nav-tag {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        font-weight: 400;
+        color: var(--ink3);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border: 1px solid var(--border);
+        padding: 5px 10px;
+        border-radius: 2px;
+      }
+
+      .wrap {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+      }
+
+      /* Hero */
+      .hero {
+        padding: 52px 0 36px;
+        position: relative;
+      }
+
+      .hero-eyebrow {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .hero-eyebrow::before {
+        content: "";
+        display: inline-block;
+        width: 28px;
+        height: 1px;
+        background: var(--gold);
+      }
+
+      .hero h1 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(36px, 10vw, 52px);
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -1px;
+        color: var(--ink);
+        margin-bottom: 16px;
+      }
+      .hero h1 em {
+        font-style: italic;
+        color: var(--gold);
+      }
+
+      .hero p {
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--ink2);
+        max-width: 380px;
+      }
+
+      /* Divider */
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0;
+      }
+      .divider-line {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .divider-diamond {
+        width: 6px;
+        height: 6px;
+        background: var(--gold);
+        transform: rotate(45deg);
+        flex-shrink: 0;
+      }
+
+      /* Upload */
+      .upload-box {
+        border: 1.5px dashed var(--border2);
+        border-radius: var(--r);
+        background: var(--cream);
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 16px;
+      }
+      .upload-box:hover {
+        border-color: var(--gold);
+        background: #fdf9f2;
+      }
+      .upload-box.drag-over {
+        border-color: var(--gold);
+        background: #fdf5e0;
+      }
+      .upload-box.has-image {
+        border-style: solid;
+        border-color: var(--border);
+      }
+
+      #fileInput {
+        display: none;
+      }
+
+      .upload-inner {
+        padding: 44px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .upload-icon {
+        width: 52px;
+        height: 52px;
+        border: 1.5px solid var(--border2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        background: var(--bg2);
+        margin-bottom: 4px;
+      }
+
+      .upload-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .upload-hint {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        color: var(--ink3);
+        letter-spacing: 0.5px;
+      }
+
+      #previewImg {
+        width: 100%;
+        max-height: 340px;
+        object-fit: cover;
+        display: none;
+        border-radius: 2px;
+      }
+
+      .preview-chip {
+        display: none;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(26, 21, 16, 0.78);
+        backdrop-filter: blur(8px);
+        border-radius: 3px;
+        padding: 5px 10px;
+        font-size: 11px;
+        color: #e8e0d0;
+        align-items: center;
+        gap: 8px;
+      }
+      .upload-box.has-image .preview-chip {
+        display: flex;
+      }
+      .change-btn {
+        color: var(--gold-light);
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      /* Age input section */
+      .age-section {
+        margin-bottom: 16px;
+      }
+
+      .sec-label {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--ink3);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .sec-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .age-presets {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .age-preset {
+        background: var(--cream);
+        border: 1.5px solid var(--border);
+        border-radius: var(--r);
+        padding: 10px 6px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.15s;
+      }
+      .age-preset:hover {
+        border-color: var(--gold);
+      }
+      .age-preset.on {
+        border-color: var(--gold);
+        background: #fdf5e0;
+      }
+      .age-preset.on .preset-num {
+        color: var(--gold);
+      }
+
+      .preset-num {
+        font-family: "Playfair Display", serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1;
+        margin-bottom: 3px;
+        transition: color 0.15s;
+      }
+      .preset-label {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--ink3);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .age-custom-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .age-custom-label {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        color: var(--ink3);
+        white-space: nowrap;
+        letter-spacing: 0.5px;
+      }
+
+      .age-input {
+        flex: 1;
+        background: var(--cream);
+        border: 1.5px solid var(--border);
+        border-radius: var(--r);
+        color: var(--ink);
+        font-family: "Playfair Display", serif;
+        font-size: 18px;
+        font-weight: 700;
+        padding: 10px 14px;
+        outline: none;
+        transition: border-color 0.15s;
+        text-align: center;
+        -moz-appearance: textfield;
+      }
+      .age-input::-webkit-outer-spin-button,
+      .age-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+      }
+      .age-input:focus {
+        border-color: var(--gold);
+      }
+      .age-input::placeholder {
+        color: var(--ink3);
+        font-size: 14px;
+        font-family: "DM Sans", sans-serif;
+      }
+
+      .age-unit {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        color: var(--ink3);
+        letter-spacing: 1px;
+      }
+
+      /* Generate button */
+      #genBtn {
+        width: 100%;
+        padding: 16px;
+        background: var(--ink);
+        border: none;
+        border-radius: var(--r);
+        color: var(--bg);
+        font-family: "Playfair Display", serif;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          transform 0.12s;
+        position: relative;
+        overflow: hidden;
+      }
+      #genBtn::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          var(--gold),
+          var(--gold-light),
+          var(--gold)
+        );
+      }
+      #genBtn:hover:not(:disabled) {
+        background: #2a2015;
+        transform: translateY(-1px);
+      }
+      #genBtn:disabled {
+        background: var(--bg2);
+        color: var(--ink3);
+        cursor: not-allowed;
+        transform: none;
+      }
+      #genBtn:disabled::before {
+        display: none;
+      }
+
+      /* Progress */
+      #prog {
+        display: none;
+        margin-top: 16px;
+        background: var(--cream);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 20px;
+      }
+
+      .prog-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .prog-title {
+        font-family: "Playfair Display", serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .prog-pct {
+        font-family: "DM Mono", monospace;
+        font-size: 13px;
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .prog-track {
+        height: 2px;
+        background: var(--bg2);
+        border-radius: 100px;
+        overflow: hidden;
+        margin-bottom: 14px;
+      }
+      .prog-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold), var(--gold-light));
+        border-radius: 100px;
+        width: 0%;
+        transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .prog-step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        color: var(--ink3);
+        letter-spacing: 0.3px;
+      }
+      .step-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--gold);
+        flex-shrink: 0;
+        animation: blink 1.1s ease-in-out infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.2;
+        }
+      }
+
+      /* Error */
+      #errBox {
+        display: none;
+        margin-top: 16px;
+        background: rgba(192, 57, 43, 0.06);
+        border: 1px solid rgba(192, 57, 43, 0.2);
+        border-radius: var(--r);
+        padding: 14px 16px;
+        font-size: 13px;
+        color: var(--red);
+        line-height: 1.6;
+        font-family: "DM Mono", monospace;
+      }
+
+      /* Result */
+      #result {
+        display: none;
+        margin-top: 16px;
+        animation: up 0.4s ease;
+      }
+      @keyframes up {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      .result-card {
+        background: var(--cream);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        overflow: hidden;
+      }
+
+      .result-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg2);
+      }
+
+      .result-head-l {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .result-badge {
+        width: 8px;
+        height: 8px;
+        background: var(--gold);
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px rgba(200, 150, 42, 0.2);
+      }
+
+      .result-title {
+        font-family: "Playfair Display", serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .result-sub {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: var(--ink3);
+        margin-top: 2px;
+        letter-spacing: 0.5px;
+      }
+
+      .dl-btn {
+        width: 32px;
+        height: 32px;
+        background: var(--bg);
+        border: 1px solid var(--border2);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .dl-btn:hover {
+        border-color: var(--gold);
+        background: var(--cream);
+      }
+
+      /* Compare slider */
+      .cmp {
+        position: relative;
+        overflow: hidden;
+        cursor: ew-resize;
+        user-select: none;
+        touch-action: none;
+        background: var(--bg2);
+        min-height: 200px;
+      }
+
+      .cmp-result {
+        width: 100%;
+        display: block;
+        min-height: 200px;
+      }
+
+      .cmp-clip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        overflow: hidden;
+        width: 50%;
+      }
+
+      .cmp-original {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .cmp-bar {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 1px;
+        height: 100%;
+        background: rgba(200, 150, 42, 0.9);
+        transform: translateX(-50%);
+        pointer-events: none;
+        z-index: 5;
+      }
+
+      .cmp-knob {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 32px;
+        height: 32px;
+        background: var(--gold);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: #fff;
+        z-index: 6;
+        pointer-events: none;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .cmp-tag {
+        position: absolute;
+        top: 10px;
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 2px;
+        z-index: 7;
+        pointer-events: none;
+      }
+      .cmp-tag.orig {
+        left: 10px;
+        background: rgba(26, 21, 16, 0.7);
+        color: #e8e0d0;
+      }
+      .cmp-tag.aged {
+        right: 10px;
+        background: rgba(200, 150, 42, 0.9);
+        color: #fff;
+      }
+
+      .result-foot {
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        background: var(--bg2);
+      }
+      .foot-item {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: var(--ink3);
+        letter-spacing: 0.3px;
+      }
+      .foot-item b {
+        color: var(--ink2);
+        font-weight: 500;
+      }
+
+      .btns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .btn-ghost {
+        padding: 13px;
+        background: transparent;
+        border: 1.5px solid var(--border2);
+        border-radius: var(--r);
+        color: var(--ink2);
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .btn-ghost:hover {
+        border-color: var(--ink);
+        background: var(--bg2);
+      }
+
+      .btn-dark {
+        padding: 13px;
+        background: var(--ink);
+        border: none;
+        border-radius: var(--r);
+        color: var(--bg);
+        font-family: "Playfair Display", serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s;
+        letter-spacing: 0.5px;
+      }
+      .btn-dark:hover {
+        background: #2a2015;
+      }
+
+      /* Age display in hero */
+      .age-display {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        padding: 4px 12px 4px 8px;
+        margin-top: 16px;
+      }
+      .age-display-num {
+        font-family: "Playfair Display", serif;
+        font-size: 28px;
+        font-weight: 900;
+        color: var(--gold);
+        line-height: 1;
+      }
+      .age-display-label {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: var(--ink3);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">time<span>warp</span></div>
+      <div class="nav-tag">AI · Age Transform</div>
+    </nav>
+
+    <div class="wrap">
+      <div class="hero">
+        <div class="hero-eyebrow">Photorealistic aging</div>
+        <h1>See yourself<br />at <em>any age</em></h1>
+        <p>
+          Upload a portrait. Set a target age. Watch time do its work —
+          realistically, naturally, without filters.
+        </p>
+      </div>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-diamond"></div>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Upload -->
+      <div class="upload-box" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" />
+        <div class="upload-inner" id="uploadInner">
+          <div class="upload-icon">🪞</div>
+          <div class="upload-title">Drop portrait or tap to upload</div>
+          <div class="upload-hint">JPG · PNG · WEBP</div>
+        </div>
+        <img id="previewImg" src="" alt="" />
+        <div class="preview-chip">
+          <span id="fnLabel">portrait.jpg</span>
+          <span class="change-btn" id="changeBtn">Change</span>
+        </div>
+      </div>
+
+      <!-- Age selector -->
+      <div class="age-section">
+        <div class="sec-label">Target age</div>
+
+        <div class="age-presets">
+          <div class="age-preset" data-age="5">
+            <div class="preset-num">5</div>
+            <div class="preset-label">Child</div>
+          </div>
+          <div class="age-preset" data-age="16">
+            <div class="preset-num">16</div>
+            <div class="preset-label">Teen</div>
+          </div>
+          <div class="age-preset" data-age="40">
+            <div class="preset-num">40</div>
+            <div class="preset-label">Adult</div>
+          </div>
+          <div class="age-preset" data-age="75">
+            <div class="preset-num">75</div>
+            <div class="preset-label">Elder</div>
+          </div>
+        </div>
+
+        <div class="age-custom-row">
+          <span class="age-custom-label">or type:</span>
+          <input
+            type="number"
+            id="ageInput"
+            class="age-input"
+            min="1"
+            max="100"
+            placeholder="age"
+          />
+          <span class="age-unit">yrs old</span>
+        </div>
+      </div>
+
+      <button id="genBtn" disabled>Travel Through Time →</button>
+
+      <!-- Progress -->
+      <div id="prog">
+        <div class="prog-row">
+          <div class="prog-title">Aging in progress…</div>
+          <div class="prog-pct" id="pctLbl">0%</div>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="progFill"></div>
+        </div>
+        <div class="prog-step">
+          <div class="step-dot"></div>
+          <span id="stepLbl">Connecting to AI…</span>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div id="errBox"></div>
+
+      <!-- Result -->
+      <div id="result">
+        <div class="result-card">
+          <div class="result-head">
+            <div class="result-head-l">
+              <div class="result-badge"></div>
+              <div>
+                <div class="result-title">Age Transformation</div>
+                <div class="result-sub" id="resMeta">—</div>
+              </div>
+            </div>
+            <div class="dl-btn" id="dlBtn" title="Download">⬇</div>
+          </div>
+
+          <div class="cmp" id="cmp">
+            <img class="cmp-result" id="resImg" src="" alt="output" />
+            <div class="cmp-clip" id="cmpClip">
+              <img class="cmp-original" id="cmpOrig" src="" alt="original" />
+            </div>
+            <div class="cmp-bar" id="cmpBar"></div>
+            <div class="cmp-knob" id="cmpKnob">⇄</div>
+            <div class="cmp-tag orig">Now</div>
+            <div class="cmp-tag aged" id="agedTag">Age 40</div>
+          </div>
+
+          <div class="result-foot">
+            <div class="foot-item">Target: <b id="fAge">—</b></div>
+            <div class="foot-item">Model: <b>Qwen Image Edit</b></div>
+            <div class="foot-item">API: <b>/lambda</b></div>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="btn-ghost" id="resetBtn">← New portrait</button>
+          <button class="btn-dark" id="retryBtn">Regenerate</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function waitForGradio(timeoutMs = 12000) {
+        return new Promise((resolve, reject) => {
+          const started = Date.now();
+          const check = () => {
+            if (window.GradioClient) {
+              resolve({ Client: window.GradioClient });
+              return;
+            }
+            if (Date.now() - started > timeoutMs) {
+              reject(new Error("Could not load the Gradio JavaScript client."));
+              return;
+            }
+            setTimeout(check, 50);
+          };
+          check();
+        });
+      }
+
+      function buildPrompt(age) {
+        return `Completely transform the person in this image to show how they would 
+realistically look at exactly [AGE] years old.
+
+CRITICAL — FULL BODY AND PHYSICAL TRANSFORMATION:
+
+If target age is 1-10 (child):
+FACE:
+- Round chubby face, full baby cheeks, baby fat under chin
+- Tiny button nose, very wide innocent eyes with large irises
+- Massive smooth forehead, small underdeveloped chin
+- Zero facial hair, zero stubble, zero adult features
+- Skin completely smooth and flawless like a real child
+- Head looks large compared to body, eyes sit low on face
+- Lips small and soft, no adult lip definition
+
+BODY:
+- Dramatically smaller and shorter body — a 5 year old is roughly 
+  110cm tall, shrink the entire body proportionally
+- Chubby short limbs, round belly, no muscle definition whatsoever
+- Hands are small and chubby with short stubby fingers
+- Neck is short and round, no visible neck muscles
+- Shoulders narrow and rounded, no adult shoulder width
+- Child body proportions: head is large relative to body
+
+SKIN:
+- Keep exact same skin tone and ethnicity — never lighten or darken
+- Smooth flawless child skin with natural warmth
+- No pores visible, no adult skin texture
+
+If target age is 11-17 (teenager):
+FACE:
+- Slightly longer face, baby fat reducing but still soft
+- Light skin, minor blemishes natural for teen skin
+- No beard, maybe very light peach fuzz only if male
+- Softer jawline than adult, still rounded features
+
+BODY:
+- Shorter and slimmer than adult — teenager height and build
+- Thin limbs with minimal muscle, lanky proportions
+- Narrow shoulders starting to widen but not fully adult
+- Hands and feet slightly oversized for body (teen growth spurt)
+- No adult muscle mass or bulk
+
+SKIN:
+- Same skin tone preserved exactly
+- Possible light acne or blemishes natural for teen age
+- Slight oiliness natural for teenage skin
+
+If target age is 18-35 (young adult):
+FACE:
+- Full adult face, defined jawline, normal adult proportions
+- Smooth skin with minimal lines, natural adult texture
+- Natural facial hair appropriate for the person
+
+BODY:
+- Full adult height and proportions
+- Natural muscle tone appropriate for lifestyle
+- Adult shoulder width, adult hand size
+- Normal adult posture and body mass
+
+SKIN:
+- Same skin tone preserved exactly
+- Natural adult skin texture with pores
+- No blemishes unless in original
+
+If target age is 36-60 (middle age):
+FACE:
+- Forehead lines, mild nasolabial folds, slight eye wrinkles
+- Less volume in cheeks, more defined bone structure showing
+- Grey starting at temples if male, crow's feet around eyes
+- Slight loosening of skin under chin
+
+BODY:
+- Same height as adult but posture may soften slightly
+- Possible slight increase in body weight and midsection
+- Muscle tone slightly reduced, softer limbs
+- Hands show slight age: minor veins more visible
+
+SKIN:
+- Same skin tone preserved exactly — never change ethnicity
+- Natural aging texture: slightly less elasticity
+- Fine lines on hands and neck
+- Possible minor age spots if 50+
+
+If target age is 61+ (elderly):
+FACE:
+- Deep wrinkles across forehead, around eyes, around mouth
+- Significantly sagging skin under chin and cheeks, jowls
+- White or grey hair, age spots, thinner eyebrows
+- Deeply hooded eyes, prominent bone structure under loose skin
+- Vertical lip lines, deep nasolabial folds
+
+BODY:
+- Slight height reduction — elderly people lose 2-4cm of height
+- Reduced muscle mass throughout, thinner limbs
+- Slight forward posture and rounded shoulders
+- Hands show significant aging: prominent veins, age spots,
+  thinner skin, more defined knuckles
+- Reduced overall body mass or redistributed weight
+
+SKIN:
+- Same skin tone and ethnicity preserved exactly — critical
+- Thin papery skin texture, less elasticity everywhere
+- Age spots on hands, face, and exposed areas
+- Veins more visible through thinner skin on hands and arms
+
+PRESERVE ALWAYS:
+- Exact same skin tone and ethnicity — this must never change
+  regardless of age transformation
+- Same background, lighting direction, and environment
+- Same clothing scaled to new body size if age requires
+- Same camera angle and framing
+- Core facial identity — same person, just aged or de-aged
+
+REALISM RULES:
+- Must look like a real photograph of a real person at that age
+- Natural skin texture consistent with target age
+- Consistent lighting and shadows with original photo
+- Body size and height must match target age realistically
+- No filter look, no AI smoothing, no beauty enhancement mode
+- Clothing should scale and fit naturally on the new body size
+
+DO NOT:
+- Do not only change the face while keeping an adult body for child ages
+- Do not keep adult height and build when target is under 15
+- Do not change skin tone, ethnicity, or race under any circumstances
+- Do not add cartoon, illustration, painting, or digital art look
+- Do not add text, watermarks, logos, or overlays
+- Do not change the background or environment
+- Do not smooth out all wrinkles for elderly ages
+- Do not make elderly people look younger than their target age`;
+      }
+
+      let imgFile = null;
+      let imgDataURL = null;
+      let selectedAge = null;
+      let genSrc = null;
+      let busy = false;
+
+      const dropZone = document.getElementById("dropZone");
+      const fileInput = document.getElementById("fileInput");
+      const previewImg = document.getElementById("previewImg");
+      const uploadInner = document.getElementById("uploadInner");
+      const fnLabel = document.getElementById("fnLabel");
+      const changeBtn = document.getElementById("changeBtn");
+      const genBtn = document.getElementById("genBtn");
+      const ageInput = document.getElementById("ageInput");
+      const prog = document.getElementById("prog");
+      const progFill = document.getElementById("progFill");
+      const pctLbl = document.getElementById("pctLbl");
+      const stepLbl = document.getElementById("stepLbl");
+      const errBox = document.getElementById("errBox");
+      const result = document.getElementById("result");
+      const resImg = document.getElementById("resImg");
+      const cmpOrig = document.getElementById("cmpOrig");
+      const cmpClip = document.getElementById("cmpClip");
+      const cmpBar = document.getElementById("cmpBar");
+      const cmpKnob = document.getElementById("cmpKnob");
+      const cmp = document.getElementById("cmp");
+      const dlBtn = document.getElementById("dlBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const retryBtn = document.getElementById("retryBtn");
+      const resMeta = document.getElementById("resMeta");
+      const fAge = document.getElementById("fAge");
+      const agedTag = document.getElementById("agedTag");
+
+      function checkReady() {
+        const age = ageInput.value ? parseInt(ageInput.value) : selectedAge;
+        genBtn.disabled = !imgFile || !age || age < 1 || age > 100;
+      }
+
+      // Upload
+      dropZone.addEventListener("click", (e) => {
+        if (e.target !== changeBtn) fileInput.click();
+      });
+      changeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files[0]) loadImg(e.target.files[0]);
+      });
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+      });
+      dropZone.addEventListener("dragleave", () =>
+        dropZone.classList.remove("drag-over"),
+      );
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("drag-over");
+        const f = e.dataTransfer.files[0];
+        if (f?.type.startsWith("image/")) loadImg(f);
+      });
+
+      function loadImg(file) {
+        imgFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imgDataURL = e.target.result;
+          previewImg.src = imgDataURL;
+          previewImg.style.display = "block";
+          uploadInner.style.display = "none";
+          dropZone.classList.add("has-image");
+          fnLabel.textContent = file.name;
+          result.style.display = "none";
+          errBox.style.display = "none";
+          prog.style.display = "none";
+          checkReady();
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Age presets
+      document.querySelectorAll(".age-preset").forEach((el) => {
+        el.addEventListener("click", () => {
+          document
+            .querySelectorAll(".age-preset")
+            .forEach((p) => p.classList.remove("on"));
+          el.classList.add("on");
+          selectedAge = parseInt(el.dataset.age);
+          ageInput.value = "";
+          checkReady();
+        });
+      });
+
+      ageInput.addEventListener("input", () => {
+        document
+          .querySelectorAll(".age-preset")
+          .forEach((p) => p.classList.remove("on"));
+        selectedAge = null;
+        checkReady();
+      });
+
+      // Progress steps
+      const STEPS = [
+        { pct: 5, t: "Connecting to AI…" },
+        { pct: 18, t: "Uploading portrait…" },
+        { pct: 32, t: "Analyzing facial structure…" },
+        { pct: 48, t: "Calculating age changes…" },
+        { pct: 62, t: "Adjusting skin texture…" },
+        { pct: 76, t: "Refining hair and features…" },
+        { pct: 88, t: "Blending natural lighting…" },
+        { pct: 95, t: "Finalizing result…" },
+      ];
+
+      let timer = null,
+        si = 0,
+        curPct = 0;
+
+      function startProg() {
+        prog.style.display = "block";
+        si = 0;
+        curPct = 0;
+        setProg(0, "Connecting to AI…");
+        timer = setInterval(() => {
+          if (si < STEPS.length) {
+            const s = STEPS[si++];
+            setProg(s.pct, s.t);
+          } else if (curPct < 99) {
+            curPct = Math.min(99, curPct + 0.1);
+            progFill.style.width = curPct + "%";
+            pctLbl.textContent = Math.round(curPct) + "%";
+          }
+        }, 1000);
+      }
+
+      function setProg(p, t) {
+        curPct = p;
+        progFill.style.width = p + "%";
+        pctLbl.textContent = p + "%";
+        stepLbl.textContent = t;
+      }
+      function endProg() {
+        clearInterval(timer);
+        setProg(100, "Complete.");
+      }
+      function killProg() {
+        clearInterval(timer);
+      }
+
+      function escapeHtml(v) {
+        return String(v)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function explainError(error) {
+        const msg = error?.message || String(error) || "Unknown error";
+        const text = msg.toLowerCase();
+        if (
+          text.includes("401") ||
+          text.includes("403") ||
+          text.includes("unauthorized")
+        )
+          return `${msg}\n\nThe Space may be private or gated.`;
+        if (
+          text.includes("429") ||
+          text.includes("rate") ||
+          text.includes("too many")
+        )
+          return `${msg}\n\nRate limited. Wait a moment and try again.`;
+        if (text.includes("failed to fetch") || text.includes("network"))
+          return `${msg}\n\nNetwork error. Check your connection.`;
+        return msg;
+      }
+
+      function extractImageUrl(value) {
+        if (typeof value === "string") return value;
+        if (Array.isArray(value)) return extractImageUrl(value[0]);
+        if (value?.url) return value.url;
+        if (value?.path) return value.path;
+        if (value?.image) return extractImageUrl(value.image);
+        throw new Error("No output image URL returned.");
+      }
+
+      async function generate() {
+        const age = ageInput.value ? parseInt(ageInput.value) : selectedAge;
+        if (!imgFile || !age || busy) return;
+        busy = true;
+        genBtn.disabled = true;
+        result.style.display = "none";
+        errBox.style.display = "none";
+        startProg();
+
+        try {
+          const { Client } = await waitForGradio();
+          const prompt = buildPrompt(age);
+          const client = await Client.connect(
+            "TejAndrewsACC/AI-Image-Editor",
+            {},
+          );
+          const resultData = await client.predict("/lambda", {
+            img_path: imgFile,
+            pr: prompt,
+          });
+          endProg();
+
+          const outputUrl = extractImageUrl(resultData.data[0]);
+          resImg.src = outputUrl;
+          cmpOrig.src = imgDataURL;
+          fAge.textContent = `${age} years old`;
+          agedTag.textContent = `Age ${age}`;
+          resMeta.textContent = `Transformed to age ${age}`;
+          genSrc = outputUrl;
+
+          setTimeout(() => {
+            prog.style.display = "none";
+            result.style.display = "block";
+            setCmp(0.5);
+            result.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 400);
+        } catch (e) {
+          killProg();
+          prog.style.display = "none";
+          const msg = escapeHtml(explainError(e)).replaceAll("\n", "<br>");
+          errBox.innerHTML = `<b>Failed</b><br>${msg}`;
+          errBox.style.display = "block";
+          console.error(e);
+        } finally {
+          busy = false;
+          checkReady();
+        }
+      }
+
+      genBtn.addEventListener("click", generate);
+      retryBtn.addEventListener("click", generate);
+
+      // Compare slider
+      function setCmp(r) {
+        const v = Math.max(0, Math.min(1, r));
+        cmpClip.style.width = v * 100 + "%";
+        cmpBar.style.left = v * 100 + "%";
+        cmpKnob.style.left = v * 100 + "%";
+      }
+
+      let drag = false;
+      cmp.addEventListener("mousedown", () => (drag = true));
+      cmp.addEventListener("touchstart", () => (drag = true), {
+        passive: true,
+      });
+      window.addEventListener("mouseup", () => (drag = false));
+      window.addEventListener("touchend", () => (drag = false));
+      window.addEventListener("mousemove", (e) => {
+        if (!drag) return;
+        const r = cmp.getBoundingClientRect();
+        setCmp((e.clientX - r.left) / r.width);
+      });
+      window.addEventListener(
+        "touchmove",
+        (e) => {
+          if (!drag) return;
+          const r = cmp.getBoundingClientRect();
+          setCmp((e.touches[0].clientX - r.left) / r.width);
+        },
+        { passive: true },
+      );
+
+      // Download
+      dlBtn.addEventListener("click", async () => {
+        if (!genSrc) return;
+        try {
+          const res = await fetch(genSrc);
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `timewarp-age-${Date.now()}.png`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        } catch {
+          window.open(genSrc, "_blank");
+        }
+      });
+
+      // Reset
+      resetBtn.addEventListener("click", () => {
+        imgFile = null;
+        imgDataURL = null;
+        genSrc = null;
+        fileInput.value = "";
+        previewImg.src = "";
+        previewImg.style.display = "none";
+        uploadInner.style.display = "flex";
+        dropZone.classList.remove("has-image");
+        genBtn.disabled = true;
+        result.style.display = "none";
+        prog.style.display = "none";
+        errBox.style.display = "none";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    </script>
+  </body>
+</html>
